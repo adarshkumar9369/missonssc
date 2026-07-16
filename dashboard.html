@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Dashboard - SSC Mission 2026</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0c0916">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        /* ===== CSS VARIABLES ===== */
+        :root {
+            --primary: #6d4aff;
+            --primary-dark: #3f1f9e;
+            --secondary: #ff6b9d;
+            --accent: #00d4ff;
+            --glass-bg: rgba(20, 16, 36, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --text-primary: #f0ecf5;
+            --text-secondary: #9b8bb5;
+            --text-muted: #6b5b85;
+            --shadow: 0 20px 40px rgba(0,0,0,0.6);
+            --radius: 28px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --info: #60a5fa;
+        }
+
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0c0916;
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 1rem;
+        }
+
+        /* ===== ANIMATED BACKGROUND ===== */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, #2d1b4e, #0a0613 80%);
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(109, 74, 255, 0.2), transparent 70%);
+            animation: floatParticle linear infinite;
+            pointer-events: none;
+        }
+
+        .particle:nth-child(1) { width: 300px; height: 300px; top: -100px; left: -100px; animation-duration: 25s; }
+        .particle:nth-child(2) { width: 400px; height: 400px; bottom: -150px; right: -150px; animation-duration: 30s; animation-delay: -5s; }
+        .particle:nth-child(3) { width: 200px; height: 200px; top: 50%; left: 50%; animation-duration: 20s; animation-delay: -10s; }
+
+        @keyframes floatParticle {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+            25% { transform: translate(50px, -80px) scale(1.1); opacity: 0.7; }
+            50% { transform: translate(-30px, 50px) scale(0.9); opacity: 0.4; }
+            75% { transform: translate(70px, 30px) scale(1.05); opacity: 0.6; }
+        }
+
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(109, 74, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(109, 74, 255, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        /* ===== GLASS CARD ===== */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: var(--radius);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,0.02);
+            transition: var(--transition);
+        }
+
+        .glass:hover {
+            transform: translateY(-3px);
+            border-color: rgba(109, 74, 255, 0.15);
+            box-shadow: 0 24px 48px rgba(90, 50, 200, 0.12);
+        }
+
+        /* ===== DASHBOARD CONTAINER ===== */
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-left .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a98eff, #6d4aff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-left .logo i {
+            -webkit-text-fill-color: initial;
+            color: var(--primary);
+            margin-right: 6px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-right .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(255,255,255,0.05);
+            padding: 0.4rem 1rem 0.4rem 0.8rem;
+            border-radius: 60px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .header-right .user-info .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .header-right .user-info .name {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .header-right .user-info .level {
+            font-size: 0.7rem;
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--warning);
+            padding: 0.15rem 0.6rem;
+            border-radius: 60px;
+            border: 1px solid rgba(251, 191, 36, 0.1);
+        }
+
+        .header-right .logout-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: var(--text-secondary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.8rem;
+        }
+
+        .header-right .logout-btn:hover {
+            background: rgba(255, 107, 107, 0.1);
+            border-color: rgba(255, 107, 107, 0.2);
+            color: var(--danger);
+        }
+
+        /* ===== WELCOME BANNER ===== */
+        .welcome-banner {
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, rgba(109, 74, 255, 0.15), rgba(255, 107, 157, 0.08));
+            border: 1px solid rgba(109, 74, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .welcome-banner .greeting h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .welcome-banner .greeting h2 span {
+            background: linear-gradient(135deg, #a98eff, #ff6b9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-banner .greeting p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+        }
+
+        .welcome-banner .exam-countdown {
+            text-align: center;
+            background: rgba(255,255,255,0.03);
+            padding: 0.5rem 1.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .welcome-banner .exam-countdown .days {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .welcome-banner .exam-countdown .label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ===== STATS ROW ===== */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            padding: 1.2rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-card .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .stat-card .stat-icon.purple { background: rgba(109, 74, 255, 0.15); color: var(--primary); }
+        .stat-card .stat-icon.green { background: rgba(52, 211, 153, 0.15); color: var(--success); }
+        .stat-card .stat-icon.orange { background: rgba(251, 191, 36, 0.15); color: var(--warning); }
+        .stat-card .stat-icon.pink { background: rgba(255, 107, 157, 0.15); color: var(--secondary); }
+        .stat-card .stat-icon.blue { background: rgba(96, 165, 250, 0.15); color: var(--info); }
+        .stat-card .stat-icon.red { background: rgba(248, 113, 113, 0.15); color: var(--danger); }
+
+        .stat-card .stat-info .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .stat-card .stat-info .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* ===== SUBJECT CARDS ===== */
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .subject-card {
+            padding: 1.5rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .subject-card .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .subject-card .subject-header .subject-icon {
+            font-size: 1.8rem;
+        }
+
+        .subject-card .subject-header .subject-icon.math { color: #a78bfa; }
+        .subject-card .subject-header .subject-icon.reasoning { color: #60a5fa; }
+        .subject-card .subject-header .subject-icon.english { color: #34d399; }
+        .subject-card .subject-header .subject-icon.gk { color: #fbbf24; }
+
+        .subject-card .subject-header .subject-progress-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .subject-card .subject-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .subject-card .subject-chapters {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+        }
+
+        .subject-card .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 60px;
+            overflow: hidden;
+        }
+
+        .subject-card .progress-bar .progress-fill {
+            height: 100%;
+            border-radius: 60px;
+            transition: width 1s ease;
+            width: 0%;
+        }
+
+        .subject-card .progress-bar .progress-fill.math { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+        .subject-card .progress-bar .progress-fill.reasoning { background: linear-gradient(90deg, #60a5fa, #2563eb); }
+        .subject-card .progress-bar .progress-fill.english { background: linear-gradient(90deg, #34d399, #059669); }
+        .subject-card .progress-bar .progress-fill.gk { background: linear-gradient(90deg, #fbbf24, #d97706); }
+
+        .subject-card .subject-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.8rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .subject-card .subject-footer .badge {
+            background: rgba(255,255,255,0.05);
+            padding: 0.15rem 0.6rem;
+            border-radius: 60px;
+        }
+
+        .subject-card .glow-effect {
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(109, 74, 255, 0.03), transparent 70%);
+            pointer-events: none;
+        }
+
+        /* ===== TWO COLUMN LAYOUT ===== */
+        .two-col {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ===== TODAY'S TASKS ===== */
+        .tasks-card {
+            padding: 1.5rem;
+        }
+
+        .tasks-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+
+        .tasks-card .card-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .tasks-card .card-header .streak {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 0.2rem 0.8rem;
+            border-radius: 60px;
+            border: 1px solid rgba(251, 191, 36, 0.1);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--warning);
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            margin-bottom: 0.6rem;
+            transition: var(--transition);
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .task-item:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.05);
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+            border-color: rgba(52, 211, 153, 0.1);
+        }
+
+        .task-item.completed .task-check {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .task-item .task-check {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: var(--transition);
+            font-size: 0.7rem;
+            color: transparent;
+        }
+
+        .task-item .task-info {
+            flex: 1;
+        }
+
+        .task-item .task-info .task-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .task-item .task-info .task-sub {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .task-item .task-xp {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.05);
+            padding: 0.15rem 0.6rem;
+            border-radius: 60px;
+        }
+
+        .task-item.completed .task-name {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* ===== QUOTE CARD ===== */
+        .quote-card {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(109, 74, 255, 0.08), rgba(255, 107, 157, 0.05));
+        }
+
+        .quote-card .quote-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            opacity: 0.3;
+            margin-bottom: 0.5rem;
+        }
+
+        .quote-card .quote-text {
+            font-size: 1rem;
+            font-weight: 500;
+            line-height: 1.5;
+            font-style: italic;
+            color: var(--text-primary);
+        }
+
+        .quote-card .quote-author {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        /* ===== QUICK ACTIONS ===== */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+            margin-top: 0.8rem;
+        }
+
+        .quick-action-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 0.7rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .quick-action-btn:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(109, 74, 255, 0.2);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        .quick-action-btn i {
+            display: block;
+            font-size: 1.3rem;
+            margin-bottom: 0.2rem;
+            color: var(--primary);
+        }
+
+        /* ===== CHART SECTION ===== */
+        .chart-card {
+            padding: 1.5rem;
+        }
+
+        .chart-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .chart-card .card-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .chart-card .card-header .chart-tabs {
+            display: flex;
+            gap: 0.3rem;
+        }
+
+        .chart-card .card-header .chart-tabs button {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.2rem 0.6rem;
+            border-radius: 60px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .chart-card .card-header .chart-tabs button.active {
+            background: rgba(109, 74, 255, 0.15);
+            color: var(--primary);
+        }
+
+        .chart-card .card-header .chart-tabs button:hover {
+            color: var(--text-primary);
+        }
+
+        .chart-wrapper {
+            height: 200px;
+            position: relative;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 992px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.8rem;
+            }
+
+            .header-right {
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+
+            .welcome-banner {
+                flex-direction: column;
+                text-align: center;
+                padding: 1.2rem;
+            }
+
+            .welcome-banner .greeting h2 {
+                font-size: 1.2rem;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .stat-card .stat-info .stat-value {
+                font-size: 1.2rem;
+            }
+
+            .subjects-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .subject-card {
+                padding: 1.2rem;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.6rem;
+            }
+
+            .subjects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card .stat-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .stat-card .stat-info .stat-value {
+                font-size: 1rem;
+            }
+
+            .header-right .user-info .name {
+                font-size: 0.75rem;
+            }
+
+            .task-item {
+                padding: 0.6rem;
+                flex-wrap: wrap;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.4rem;
+            }
+
+            .quick-action-btn {
+                padding: 0.5rem;
+                font-size: 0.7rem;
+            }
+
+            .quick-action-btn i {
+                font-size: 1rem;
+            }
+        }
+
+        /* ===== CONFETTI CONTAINER ===== */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            animation: confettiFall linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow);
+            transform: translateY(120%);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+            max-width: 350px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+        }
+
+        .toast .toast-icon {
+            font-size: 1.5rem;
+        }
+
+        .toast .toast-icon.success { color: var(--success); }
+        .toast .toast-icon.error { color: var(--danger); }
+
+        .toast .toast-content h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .toast .toast-content p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== BACKGROUND ===== -->
+    <div class="bg-container">
+        <div class="bg-gradient"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <!-- ===== CONFETTI CONTAINER ===== -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast">
+        <div class="toast-icon success" id="toastIcon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="toast-content">
+            <h4 id="toastTitle">Success!</h4>
+            <p id="toastMessage">Welcome back!</p>
+        </div>
+    </div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="dashboard-container">
+        <!-- ===== HEADER ===== -->
+        <header class="header glass" data-aos="fade-down">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-rocket"></i> SSC Mission
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <div class="avatar">A</div>
+                    <span class="name" id="userName">Adarsh</span>
+                    <span class="level"><i class="fas fa-star"></i> Lv.12</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- ===== WELCOME BANNER ===== -->
+        <div class="welcome-banner glass" data-aos="fade-up">
+            <div class="greeting">
+                <h2>👋 Good Morning, <span id="greetingName">Adarsh</span>!</h2>
+                <p><i class="fas fa-calendar-alt" style="color: var(--primary);"></i> Day 12 of 30 · Keep the momentum going!</p>
+            </div>
+            <div class="exam-countdown">
+                <div class="days" id="countdownDays">184</div>
+                <div class="label">Days until SSC GD 2026</div>
+            </div>
+        </div>
+
+        <!-- ===== STATS ROW ===== -->
+        <div class="stats-row" data-aos="fade-up" data-aos-delay="100">
+            <div class="stat-card glass">
+                <div class="stat-icon purple"><i class="fas fa-brain"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="totalQuestions">458</div>
+                    <div class="stat-label">Questions Solved</div>
+                </div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-icon green"><i class="fas fa-bullseye"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="accuracy">87%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-icon orange"><i class="fas fa-fire"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="streak">18</div>
+                    <div class="stat-label">Day Streak 🔥</div>
+                </div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-icon pink"><i class="fas fa-trophy"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="xp">2,450</div>
+                    <div class="stat-label">XP Earned</div>
+                </div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-icon blue"><i class="fas fa-clock"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="studyHours">96</div>
+                    <div class="stat-label">Study Hours</div>
+                </div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-icon red"><i class="fas fa-coins"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="coins">320</div>
+                    <div class="stat-label">Coins</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SUBJECT CARDS ===== -->
+        <div class="subjects-grid" data-aos="fade-up" data-aos-delay="200">
+            <!-- Math -->
+            <div class="subject-card glass" onclick="window.location.href='subjects/math.html'">
+                <div class="glow-effect"></div>
+                <div class="subject-header">
+                    <span class="subject-icon math"><i class="fas fa-calculator"></i></span>
+                    <span class="subject-progress-text">60%</span>
+                </div>
+                <div class="subject-name">Mathematics</div>
+                <div class="subject-chapters">18 / 30 Chapters</div>
+                <div class="progress-bar">
+                    <div class="progress-fill math" style="width: 60%;"></div>
+                </div>
+                <div class="subject-footer">
+                    <span><i class="fas fa-star" style="color: var(--warning);"></i> 85% Accuracy</span>
+                    <span class="badge"><i class="fas fa-clock"></i> 2h today</span>
+                </div>
+            </div>
+
+            <!-- Reasoning -->
+            <div class="subject-card glass" onclick="window.location.href='subjects/reasoning.html'">
+                <div class="glow-effect"></div>
+                <div class="subject-header">
+                    <span class="subject-icon reasoning"><i class="fas fa-brain"></i></span>
+                    <span class="subject-progress-text">50%</span>
+                </div>
+                <div class="subject-name">Reasoning</div>
+                <div class="subject-chapters">15 / 30 Chapters</div>
+                <div class="progress-bar">
+                    <div class="progress-fill reasoning" style="width: 50%;"></div>
+                </div>
+                <div class="subject-footer">
+                    <span><i class="fas fa-star" style="color: var(--warning);"></i> 78% Accuracy</span>
+                    <span class="badge"><i class="fas fa-clock"></i> 1.5h today</span>
+                </div>
+            </div>
+
+            <!-- English -->
+            <div class="subject-card glass" onclick="window.location.href='subjects/english.html'">
+                <div class="glow-effect"></div>
+                <div class="subject-header">
+                    <span class="subject-icon english"><i class="fas fa-book-open"></i></span>
+                    <span class="subject-progress-text">40%</span>
+                </div>
+                <div class="subject-name">English</div>
+                <div class="subject-chapters">12 / 30 Chapters</div>
+                <div class="progress-bar">
+                    <div class="progress-fill english" style="width: 40%;"></div>
+                </div>
+                <div class="subject-footer">
+                    <span><i class="fas fa-star" style="color: var(--warning);"></i> 72% Accuracy</span>
+                    <span class="badge"><i class="fas fa-clock"></i> 1h today</span>
+                </div>
+            </div>
+
+            <!-- GK -->
+            <div class="subject-card glass" onclick="window.location.href='subjects/gk.html'">
+                <div class="glow-effect"></div>
+                <div class="subject-header">
+                    <span class="subject-icon gk"><i class="fas fa-globe-asia"></i></span>
+                    <span class="subject-progress-text">33%</span>
+                </div>
+                <div class="subject-name">General Knowledge</div>
+                <div class="subject-chapters">10 / 30 Chapters</div>
+                <div class="progress-bar">
+                    <div class="progress-fill gk" style="width: 33%;"></div>
+                </div>
+                <div class="subject-footer">
+                    <span><i class="fas fa-star" style="color: var(--warning);"></i> 65% Accuracy</span>
+                    <span class="badge"><i class="fas fa-clock"></i> 0.5h today</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TWO COLUMN ===== -->
+        <div class="two-col">
+            <!-- ===== TODAY'S TASKS ===== -->
+            <div class="tasks-card glass" data-aos="fade-up" data-aos-delay="300">
+                <div class="card-header">
+                    <h3><i class="fas fa-tasks" style="color: var(--primary);"></i> Today's Tasks</h3>
+                    <div class="streak">
+                        <i class="fas fa-fire"></i> 18 Days
+                    </div>
+                </div>
+
+                <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-check"><i class="fas fa-check"></i></div>
+                    <div class="task-info">
+                        <div class="task-name">Mathematics Practice</div>
+                        <div class="task-sub">30 Questions · Chapter: Percentage</div>
+                    </div>
+                    <div class="task-xp">+50 XP</div>
+                </div>
+
+                <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-check"><i class="fas fa-check"></i></div>
+                    <div class="task-info">
+                        <div class="task-name">Reasoning Practice</div>
+                        <div class="task-sub">25 Questions · Chapter: Analogy</div>
+                    </div>
+                    <div class="task-xp">+40 XP</div>
+                </div>
+
+                <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-check"><i class="fas fa-check"></i></div>
+                    <div class="task-info">
+                        <div class="task-name">English Practice</div>
+                        <div class="task-sub">20 Questions · Chapter: Tense</div>
+                    </div>
+                    <div class="task-xp">+30 XP</div>
+                </div>
+
+                <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-check"><i class="fas fa-check"></i></div>
+                    <div class="task-info">
+                        <div class="task-name">GK Practice</div>
+                        <div class="task-sub">15 Questions · Chapter: History</div>
+                    </div>
+                    <div class="task-xp">+20 XP</div>
+                </div>
+
+                <div style="margin-top: 1rem; text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+                    <span id="taskProgress">0/4 tasks completed</span>
+                    <span style="display: inline-block; margin-left: 0.5rem; background: rgba(52, 211, 153, 0.1); padding: 0.1rem 0.6rem; border-radius: 60px; color: var(--success);">
+                        <i class="fas fa-check-circle"></i> Mission in progress
+                    </span>
+                </div>
+            </div>
+
+            <!-- ===== QUOTE & QUICK ACTIONS ===== -->
+            <div data-aos="fade-up" data-aos-delay="350">
+                <!-- Quote -->
+                <div class="quote-card glass" style="margin-bottom: 1rem;">
+                    <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                    <div class="quote-text" id="dailyQuote">
+                        "Discipline creates results that motivation never can."
+                    </div>
+                    <div class="quote-author">— SSC Mission</div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="glass" style="padding: 1.2rem;">
+                    <h4 style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.8rem; color: var(--text-secondary);">
+                        <i class="fas fa-bolt" style="color: var(--warning);"></i> Quick Actions
+                    </h4>
+                    <div class="quick-actions">
+                        <a href="features/ai-planner.html" class="quick-action-btn">
+                            <i class="fas fa-robot"></i> AI Planner
+                        </a>
+                        <a href="features/weak-topics.html" class="quick-action-btn">
+                            <i class="fas fa-bullseye"></i> Weak Topics
+                        </a>
+                        <a href="features/pyq-tracker.html" class="quick-action-btn">
+                            <i class="fas fa-history"></i> PYQ Tracker
+                        </a>
+                        <a href="features/mock-analysis.html" class="quick-action-btn">
+                            <i class="fas fa-chart-line"></i> Mock Analysis
+                        </a>
+                        <a href="features/daily-target.html" class="quick-action-btn">
+                            <i class="fas fa-flag"></i> Daily Target
+                        </a>
+                        <a href="features/profile.html" class="quick-action-btn">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== CHART SECTION ===== -->
+        <div class="chart-card glass" data-aos="fade-up" data-aos-delay="400">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-bar" style="color: var(--primary);"></i> Weekly Progress</h3>
+                <div class="chart-tabs">
+                    <button class="active" onclick="switchChart('week')">Week</button>
+                    <button onclick="switchChart('month')">Month</button>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
+
+        <!-- ===== FOOTER ===== -->
+        <div style="text-align: center; padding: 2rem 0 1rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.03); margin-top: 1.5rem;">
+            Made with ❤️ by Adarsh Tyagi · SSC Mission 2026 · Never Give Up
+            <br>
+            <span style="font-size: 0.65rem; opacity: 0.6;">
+                <i class="fas fa-check-circle" style="color: var(--success);"></i> PWA Ready · 
+                <i class="fas fa-mobile-alt" style="color: var(--info);"></i> Offline Support
+            </span>
+        </div>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // ===== AOS INIT =====
+        AOS.init({
+            duration: 600,
+            once: true,
+            offset: 30,
+            easing: 'ease-out-cubic'
+        });
+
+        // ===== CHECK LOGIN =====
+        (function checkAuth() {
+            const userData = localStorage.getItem('sscUser');
+            if (!userData) {
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const user = JSON.parse(userData);
+                if (!user.loggedIn) {
+                    window.location.href = 'login.html';
+                }
+                document.getElementById('userName').textContent = user.username.charAt(0).toUpperCase() + user.username.slice(1);
+                document.getElementById('greetingName').textContent = user.username.charAt(0).toUpperCase() + user.username.slice(1);
+            } catch (e) {
+                window.location.href = 'login.html';
+            }
+        })();
+
+        // ===== LOGOUT =====
+        function logout() {
+            localStorage.removeItem('sscUser');
+            window.location.href = 'login.html';
+        }
+
+        // ===== COUNTDOWN =====
+        function updateCountdown() {
+            const examDate = new Date('2026-07-16');
+            const now = new Date();
+            const diff = Math.ceil((examDate - now) / (1000 * 60 * 60 * 24));
+            document.getElementById('countdownDays').textContent = diff > 0 ? diff : 0;
+        }
+        updateCountdown();
+
+        // ===== TASK TOGGLE =====
+        let completedTasks = 0;
+        const totalTasks = 4;
+
+        function toggleTask(element) {
+            element.classList.toggle('completed');
+            const check = element.querySelector('.task-check');
+            if (element.classList.contains('completed')) {
+                check.innerHTML = '<i class="fas fa-check"></i>';
+                completedTasks++;
+                // Sound effect (if available)
+                playSound('click');
+            } else {
+                check.innerHTML = '';
+                completedTasks--;
+            }
+            updateTaskProgress();
+
+            // Check if all tasks completed
+            if (completedTasks === totalTasks) {
+                document.querySelector('#taskProgress + span').innerHTML = '<i class="fas fa-check-circle"></i> Mission Completed Today ✔';
+                document.querySelector('#taskProgress + span').style.color = 'var(--success)';
+                fireConfetti();
+                playSound('complete');
+                showToast('success', '🎉 Amazing!', 'All tasks completed! +100 XP bonus!');
+            } else {
+                document.querySelector('#taskProgress + span').innerHTML = '<i class="fas fa-clock"></i> Mission in progress';
+                document.querySelector('#taskProgress + span').style.color = 'var(--text-muted)';
+            }
+        }
+
+        function updateTaskProgress() {
+            document.getElementById('taskProgress').textContent = `${completedTasks}/${totalTasks} tasks completed`;
+        }
+
+        // ===== SOUND EFFECTS =====
+        function playSound(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'click') {
+                    osc.frequency.value = 600;
+                    gain.gain.value = 0.1;
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.05);
+                } else if (type === 'complete') {
+                    osc.frequency.value = 800;
+                    gain.gain.value = 0.15;
+                    osc.start(ctx.currentTime);
+                    osc.frequency.setValueAtTime(1000, ctx.currentTime + 0.1);
+                    osc.stop(ctx.currentTime + 0.3);
+                }
+            } catch (e) {
+                // Silent fallback
+            }
+        }
+
+        // ===== CONFETTI =====
+        function fireConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#6d4aff', '#ff6b9d', '#00d4ff', '#fbbf24', '#34d399', '#f87171', '#a78bfa', '#60a5fa'];
+            
+            for (let i = 0; i < 80; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = Math.random() * 100 + '%';
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.width = (Math.random() * 8 + 4) + 'px';
+                piece.style.height = (Math.random() * 8 + 4) + 'px';
+                piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                piece.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+                piece.style.animationDelay = (Math.random() * 1.5) + 's';
+                container.appendChild(piece);
+
+                setTimeout(() => {
+                    piece.remove();
+                }, 4000);
+            }
+        }
+
+        // ===== TOAST =====
+        function showToast(type, title, message) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            icon.className = `toast-icon ${type}`;
+            icon.innerHTML = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>';
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+
+        // ===== CHARTS =====
+        let progressChart;
+
+        function initChart() {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            progressChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Questions Solved',
+                        data: [45, 52, 38, 60, 55, 70, 48],
+                        borderColor: '#6d4aff',
+                        backgroundColor: 'rgba(109, 74, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#6d4aff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    }, {
+                        label: 'Accuracy %',
+                        data: [72, 75, 70, 80, 78, 85, 82],
+                        borderColor: '#34d399',
+                        backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#34d399',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#9b8bb5',
+                                font: { family: 'Poppins', size: 10 }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#6b5b85', font: { family: 'Poppins', size: 9 } }
+                        },
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#6b5b85', font: { family: 'Poppins', size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function switchChart(type) {
+            const buttons = document.querySelectorAll('.chart-tabs button');
+            buttons.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (type === 'week') {
+                progressChart.data.labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                progressChart.data.datasets[0].data = [45, 52, 38, 60, 55, 70, 48];
+                progressChart.data.datasets[1].data = [72, 75, 70, 80, 78, 85, 82];
+            } else {
+                progressChart.data.labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+                progressChart.data.datasets[0].data = [180, 220, 195, 260];
+                progressChart.data.datasets[1].data = [70, 73, 68, 78];
+            }
+            progressChart.update();
+        }
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', () => {
+            initChart();
+            updateTaskProgress();
+
+            // Greeting based on time
+            const hour = new Date().getHours();
+            let greeting = 'Good Morning';
+            if (hour >= 12 && hour < 17) greeting = 'Good Afternoon';
+            else if (hour >= 17) greeting = 'Good Evening';
+            document.querySelector('.greeting h2').innerHTML = `👋 ${greeting}, <span id="greetingName">Adarsh</span>!`;
+
+            // Random quote
+            const quotes = [
+                "Discipline creates results that motivation never can.",
+                "Every solved question is one step closer to the uniform.",
+                "One day or Day One. Decide.",
+                "Success is the sum of small efforts repeated daily.",
+                "The uniform is earned, not given.",
+                "Consistency beats intensity every time.",
+                "Your future is created by what you do today, not tomorrow.",
+                "The difference between who you are and who you want to be is what you do."
+            ];
+            document.getElementById('dailyQuote').textContent = `"${quotes[Math.floor(Math.random() * quotes.length)]}"`;
+
+            // Auto-save progress
+            setInterval(() => {
+                const data = {
+                    lastActive: new Date().toISOString(),
+                    tasksCompleted: completedTasks,
+                    totalTasks: totalTasks
+                };
+                localStorage.setItem('sscProgress', JSON.stringify(data));
+            }, 30000);
+        });
+
+        console.log('📊 Dashboard loaded successfully!');
+        console.log('🔥 Keep grinding, selection is yours!');
+    </script>
+</body>
+</html>
